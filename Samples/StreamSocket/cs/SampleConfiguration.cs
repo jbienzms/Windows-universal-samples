@@ -10,7 +10,8 @@
 //*********************************************************
 
 using System.Collections.Generic;
-using Windows.UI.Xaml.Controls;using System;
+using Windows.UI.Xaml.Controls;
+using System;
 
 namespace SDKTemplate
 {
@@ -30,7 +31,8 @@ namespace SDKTemplate
             new Scenario() { Title = "Connect to Listener", ClassType = typeof(StreamSocketSample.Scenario2) },
             new Scenario() { Title = "Send Data", ClassType = typeof(StreamSocketSample.Scenario3) },
             new Scenario() { Title = "Close Socket", ClassType = typeof(StreamSocketSample.Scenario4) },
-            new Scenario() { Title = "SSL/TLS Server Certificates", ClassType = typeof(StreamSocketSample.Scenario5) }
+            new Scenario() { Title = "SSL/TLS Server Certificates", ClassType = typeof(StreamSocketSample.Scenario5) },
+            new Scenario() { Title = "Speed Test", ClassType = typeof(StreamSocketSample.Scenario6) }
         };
     }
 

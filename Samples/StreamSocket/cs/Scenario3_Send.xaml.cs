@@ -80,9 +80,10 @@ namespace StreamSocketSample
                 writer = (DataWriter)outValue;
             }
 
-            // Write first the length of the string as UINT32 value followed up by the string. 
+            // Write first the packet type of string, then the length of the string as UINT32 value followed up by the string.
             // Writing data to the writer will just store data in memory.
             string stringToSend = "Hello";
+            writer.WriteByte((byte)PacketType.String);
             writer.WriteUInt32(writer.MeasureString(stringToSend));
             writer.WriteString(stringToSend);
 

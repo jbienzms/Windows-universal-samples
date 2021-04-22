@@ -12,6 +12,7 @@
 using SDKTemplate;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using Windows.Networking.Connectivity;
@@ -75,7 +76,7 @@ namespace StreamSocketSample
             if (CoreApplication.Properties.ContainsKey("listener"))
             {
                 rootPage.NotifyUser(
-                    "This step has already been executed. Please move to the next one.", 
+                    "This step has already been executed. Please move to the next one.",
                     NotifyType.ErrorMessage);
                 return;
             }
@@ -88,7 +89,7 @@ namespace StreamSocketSample
 
             CoreApplication.Properties.Remove("serverAddress");
             CoreApplication.Properties.Remove("adapter");
-            
+
             LocalHostItem selectedLocalHost = null;
             if ((BindToAddress.IsChecked == true) || (BindToAdapter.IsChecked == true))
             {
@@ -130,20 +131,20 @@ namespace StreamSocketSample
                     // Try to bind to a specific address.
                     await listener.BindEndpointAsync(selectedLocalHost.LocalHost, ServiceNameForListener.Text);
                     rootPage.NotifyUser(
-                        "Listening on address " + selectedLocalHost.LocalHost.CanonicalName, 
+                        "Listening on address " + selectedLocalHost.LocalHost.CanonicalName,
                         NotifyType.StatusMessage);
                 }
                 else if (BindToAdapter.IsChecked == true)
                 {
                     // Try to limit traffic to the selected adapter.
                     // This option will be overridden by interfaces with weak-host or forwarding modes enabled.
-                    NetworkAdapter selectedAdapter = selectedLocalHost.LocalHost.IPInformation.NetworkAdapter; 
+                    NetworkAdapter selectedAdapter = selectedLocalHost.LocalHost.IPInformation.NetworkAdapter;
 
                     // For demo purposes, ensure that we use the same adapter in the client connect scenario.
                     CoreApplication.Properties.Add("adapter", selectedAdapter);
 
                     await listener.BindServiceNameAsync(
-                        ServiceNameForListener.Text, 
+                        ServiceNameForListener.Text,
                         SocketProtectionLevel.PlainSocket,
                         selectedAdapter);
 
@@ -163,7 +164,7 @@ namespace StreamSocketSample
                 }
 
                 rootPage.NotifyUser(
-                    "Start listening failed with error: " + exception.Message, 
+                    "Start listening failed with error: " + exception.Message,
                     NotifyType.ErrorMessage);
             }
         }
@@ -174,36 +175,90 @@ namespace StreamSocketSample
         /// <param name="sender">The listener that accepted the connection.</param>
         /// <param name="args">Parameters associated with the accepted connection.</param>
         private async void OnConnection(
-            StreamSocketListener sender, 
+            StreamSocketListener sender,
             StreamSocketListenerConnectionReceivedEventArgs args)
         {
             DataReader reader = new DataReader(args.Socket.InputStream);
+
+            // A place to receive raw data
+            byte[] buffer = null;
+
             try
             {
                 while (true)
                 {
-                    // Read first 4 bytes (length of the subsequent string).
-                    uint sizeFieldCount = await reader.LoadAsync(sizeof(uint));
+                    // Load one byte to determine type of data.
+                    uint sizeFieldCount = await reader.LoadAsync(sizeof(byte));
+                    if (sizeFieldCount != sizeof(byte))
+                    {
+                        // The underlying socket was closed before we were able to read the whole data.
+                        return;
+                    }
+
+                    // Read the first byte to determine packet type
+                    PacketType packetType = (PacketType) reader.ReadByte();
+
+                    // Read next 4 bytes to determine length of data.
+                    sizeFieldCount = await reader.LoadAsync(sizeof(uint));
                     if (sizeFieldCount != sizeof(uint))
                     {
                         // The underlying socket was closed before we were able to read the whole data.
                         return;
                     }
 
-                    // Read the string.
-                    uint stringLength = reader.ReadUInt32();
-                    uint actualStringLength = await reader.LoadAsync(stringLength);
-                    if (stringLength != actualStringLength)
+                    // Receive based on packet type
+                    switch (packetType)
                     {
-                        // The underlying socket was closed before we were able to read the whole data.
-                        return;
+                        // Receive string
+                        case PacketType.String:
+
+                            // Read the string.
+                            uint stringLength = reader.ReadUInt32();
+                            uint actualStringLength = await reader.LoadAsync(stringLength);
+                            if (stringLength != actualStringLength)
+                            {
+                                // The underlying socket was closed before we were able to read the whole data.
+                                return;
+                            }
+
+                            // Display the string on the screen. The event is invoked on a non-UI thread, so we need to marshal
+                            // the text back to the UI thread.
+                            NotifyUserFromAsyncThread(
+                                String.Format("Received data: \"{0}\"", reader.ReadString(actualStringLength)),
+                                NotifyType.StatusMessage);
+
+                            break;
+
+                        // Receive buffer
+                        case PacketType.Bufffer:
+
+                            // Read the buffer length
+                            uint bufferLength = reader.ReadUInt32();
+                            uint actualBufferLength = await reader.LoadAsync(bufferLength);
+                            if (bufferLength != actualBufferLength)
+                            {
+                                // The underlying socket was closed before we were able to read the whole data.
+                                return;
+                            }
+
+                            // Make sure buffer is initialized and correct size
+                            if ((buffer == null) || (buffer.Length != bufferLength))
+                            {
+                                buffer = new byte[bufferLength];
+                            }
+
+                            // Receive the data
+                            reader.ReadBytes(buffer);
+
+                            // Log but don't display receipt of data. Too many notifications.
+                            Debug.WriteLine("Received {0} bytes", bufferLength);
+
+                            break;
+
+                        default:
+                            break;
                     }
 
-                    // Display the string on the screen. The event is invoked on a non-UI thread, so we need to marshal
-                    // the text back to the UI thread.
-                    NotifyUserFromAsyncThread(
-                        String.Format("Received data: \"{0}\"", reader.ReadString(actualStringLength)), 
-                        NotifyType.StatusMessage);
                 }
             }
             catch (Exception exception)
@@ -215,7 +270,7 @@ namespace StreamSocketSample
                 }
 
                 NotifyUserFromAsyncThread(
-                    "Read stream failed with error: " + exception.Message, 
+                    "Read stream failed with error: " + exception.Message,
                     NotifyType.ErrorMessage);
             }
         }
@@ -223,7 +278,7 @@ namespace StreamSocketSample
         private void NotifyUserFromAsyncThread(string strMessage, NotifyType type)
         {
             var ignore = Dispatcher.RunAsync(
-                CoreDispatcherPriority.Normal, () => rootPage.NotifyUser(strMessage, type));
+                             CoreDispatcherPriority.Normal, () => rootPage.NotifyUser(strMessage, type));
         }
 
         /// <summary>
@@ -277,7 +332,7 @@ namespace StreamSocketSample
 
             this.LocalHost = localHostName;
             this.DisplayString = "Address: " + localHostName.DisplayName +
-                " Adapter: " + localHostName.IPInformation.NetworkAdapter.NetworkAdapterId;
+                                 " Adapter: " + localHostName.IPInformation.NetworkAdapter.NetworkAdapterId;
         }
     }
 }

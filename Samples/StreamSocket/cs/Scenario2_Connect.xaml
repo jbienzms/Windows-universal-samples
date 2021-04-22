@@ -34,7 +34,7 @@
       </TextBlock>
       <TextBlock TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}">Host name:</TextBlock>
       <!-- To connect to a remote host, set IsEnabled="true" below -->
-      <TextBox x:Name="HostNameForConnect" IsEnabled="False" Text="localhost"/>
+      <TextBox x:Name="HostNameForConnect" IsEnabled="True" Text="localhost"/>
       <TextBlock TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}">Service name:</TextBlock>
       <TextBox x:Name="ServiceNameForConnect" Text="22112"/>
       <Button x:Name="ConnectSocket" Content="Connect" Click="ConnectSocket_Click"/>

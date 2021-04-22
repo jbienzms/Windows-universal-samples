@@ -136,13 +136,13 @@ namespace SDKTemplate
                 StatusPanel.Visibility = Visibility.Collapsed;
             }
 
-			// Raise an event if necessary to enable a screen reader to announce the status update.
-			var peer = FrameworkElementAutomationPeer.FromElement(StatusBlock);
-			if (peer != null)
-			{
-				peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
-			}
-		}
+            // Raise an event if necessary to enable a screen reader to announce the status update.
+            var peer = FrameworkElementAutomationPeer.FromElement(StatusBlock);
+            if (peer != null)
+            {
+                peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+            }
+        }
 
         async void Footer_Click(object sender, RoutedEventArgs e)
         {
@@ -158,5 +158,11 @@ namespace SDKTemplate
     {
         StatusMessage,
         ErrorMessage
+    };
+
+    public enum PacketType : byte
+    {
+        String = 0,
+        Bufffer = 1
     };
 }

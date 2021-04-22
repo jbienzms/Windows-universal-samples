@@ -13,10 +13,13 @@
 <Page x:Class="StreamSocketSample.Scenario6" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:SDKTemplate" xmlns:common="using:SDKTemplate.Common" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
   <StackPanel>
     <TextBlock x:Name="InputTextBlock1" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}">
-        Now you can send data to the 'server'. Data is often sent using
-      a DataWriter instance, which writes to the socket's output stream.
+        Now you can run a speed test with the 'server'. Random blocks of data will be sent using
+      a DataWriter and statistics about the transmission will be shown below.
     </TextBlock>
-    <Button x:Name="SendHello" Content="Send 'hello'" Click="SendHello_Click"/>
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="StartTest" Content="Start Test" Margin="4" Click="StartTest_Click"/>
+            <Button x:Name="StopTest" Content="Stop Test" Margin="4" IsEnabled="False" Click="StopTest_Click"/>
+        </StackPanel>
     <TextBlock x:Name="SendOutput" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}"/>
     <!-- Add Storyboards to the visual states below as necessary for supporting the various layouts -->
     <VisualStateManager.VisualStateGroups>

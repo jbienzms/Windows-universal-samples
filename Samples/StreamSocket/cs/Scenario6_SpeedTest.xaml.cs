@@ -12,6 +12,8 @@
 using SDKTemplate;
 using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using Windows.Networking.Sockets;
@@ -29,7 +31,23 @@ namespace StreamSocketSample
     {
         // A pointer back to the main page.  This is needed if you want to call methods in MainPage such
         // as NotifyUser()
-        MainPage rootPage = MainPage.Current;
+        private MainPage rootPage = MainPage.Current;
+
+        /// <summary>
+        /// The socket used to send data.
+        /// </summary>
+        private StreamSocket socket;
+
+        /// <summary>
+        /// The task for the test if it's running.
+        /// </summary>
+        private Task testTask;
+
+        /// <summary>
+        /// The cancellation source to stop the test if it's running.
+        /// </summary>
+        private CancellationTokenSource testCancellation;
+
 
         public Scenario6()
         {
@@ -46,29 +64,21 @@ namespace StreamSocketSample
         }
 
         /// <summary>
-        /// This is the click handler for the 'SendHello' button.
+        /// Runs the speed test until it's canceled.
         /// </summary>
-        /// <param name="sender">Object for which the event was generated.</param>
-        /// <param name="e">Event's parameters.</param>
-        private async void SendHello_Click(object sender, RoutedEventArgs e)
+        /// <param name="ct">
+        /// A <see cref="CancellationToken"/> that can be used to stop the test.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> that represents the operation.
+        /// </returns>
+        private async Task RunTestAsync(CancellationToken ct)
         {
-            if (!CoreApplication.Properties.ContainsKey("connected"))
-            {
-                rootPage.NotifyUser("Please run previous steps before doing this one.", NotifyType.ErrorMessage);
-                return;
-            }
-
-            object outValue;
-            StreamSocket socket;
-            if (!CoreApplication.Properties.TryGetValue("clientSocket", out outValue))
-            {
-                rootPage.NotifyUser("Please run previous steps before doing this one.", NotifyType.ErrorMessage);
-                return;
-            }
-
-            socket = (StreamSocket)outValue;
+            // Used for generating random data below
+            Random random = new Random();
 
             // Create a DataWriter if we did not create one yet. Otherwise use one that is already cached.
+            object outValue;
             DataWriter writer;
             if (!CoreApplication.Properties.TryGetValue("clientDataWriter", out outValue))
             {
@@ -80,28 +90,96 @@ namespace StreamSocketSample
                 writer = (DataWriter)outValue;
             }
 
-            // Write first the length of the string as UINT32 value followed up by the string.
-            // Writing data to the writer will just store data in memory.
-            string stringToSend = "Hello";
-            writer.WriteUInt32(writer.MeasureString(stringToSend));
-            writer.WriteString(stringToSend);
+            // Create a 1k buffer
+            byte[] buffer = new byte[1024];
 
-            // Write the locally buffered data to the network.
-            try
+            // Run until canceled
+            while (!ct.IsCancellationRequested)
             {
-                await writer.StoreAsync();
-                SendOutput.Text = "\"" + stringToSend + "\" sent successfully.";
-            }
-            catch (Exception exception)
-            {
-                // If this is an unknown status it means that the error if fatal and retry will likely fail.
-                if (SocketError.GetStatus(exception.HResult) == SocketErrorStatus.Unknown)
+                // Randomize the buffer
+                random.NextBytes(buffer);
+
+                // Write the packet type, followed by length of the buffer as UINT32 value followed up by the data.
+                // Writing data to the writer will just store data in memory.
+                writer.WriteByte((byte)PacketType.Bufffer);
+                writer.WriteUInt32((UInt32)buffer.Length);
+                writer.WriteBytes(buffer);
+
+                // Write the locally buffered data to the network.
+                try
                 {
-                    throw;
+                    await writer.StoreAsync();
+                    // SendOutput.Text = "\"" + stringToSend + "\" sent successfully.";
+                    Debug.WriteLine("Wrote buffer");
                 }
+                catch (Exception exception)
+                {
+                    // If this is an unknown status it means that the error if fatal and retry will likely fail.
+                    if (SocketError.GetStatus(exception.HResult) == SocketErrorStatus.Unknown)
+                    {
+                        throw;
+                    }
 
-                rootPage.NotifyUser("Send failed with error: " + exception.Message, NotifyType.ErrorMessage);
+                    rootPage.NotifyUser("Send failed with error: " + exception.Message, NotifyType.ErrorMessage);
+                }
             }
+        }
+
+        /// <summary>
+        /// This is the click handler for the 'SendHello' button.
+        /// </summary>
+        /// <param name="sender">Object for which the event was generated.</param>
+        /// <param name="e">Event's parameters.</param>
+        private void StartTest_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CoreApplication.Properties.ContainsKey("connected"))
+            {
+                rootPage.NotifyUser("Please connect before starting the test.", NotifyType.ErrorMessage);
+                return;
+            }
+
+            object outValue;
+            if (!CoreApplication.Properties.TryGetValue("clientSocket", out outValue))
+            {
+                rootPage.NotifyUser("Please connect before starting the test.", NotifyType.ErrorMessage);
+                return;
+            }
+            socket = (StreamSocket)outValue;
+
+            // Disable start button
+            StartTest.IsEnabled = false;
+
+            // Create the cancellation token
+            testCancellation = new CancellationTokenSource();
+
+            // Start the test
+            testTask = RunTestAsync(testCancellation.Token);
+
+            // Notify
+            rootPage.NotifyUser("Test started.", NotifyType.StatusMessage);
+
+            // Enable the stop button
+            StopTest.IsEnabled = true;
+        }
+
+        private void StopTest_Click(object sender, RoutedEventArgs e)
+        {
+            // Disable the stop button
+            StopTest.IsEnabled = false;
+
+            // Cancel test
+            if ((testCancellation != null) && (!testCancellation.IsCancellationRequested))
+            {
+                testCancellation.Cancel();
+                testCancellation = null;
+                testTask = null;
+
+                // Notify
+                rootPage.NotifyUser("Test stopped.", NotifyType.StatusMessage);
+            }
+
+            // Enable start button
+            StartTest.IsEnabled = true;
         }
     }
 }
