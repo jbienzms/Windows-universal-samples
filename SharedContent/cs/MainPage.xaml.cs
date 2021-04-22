@@ -163,6 +163,6 @@ namespace SDKTemplate
     public enum PacketType : byte
     {
         String = 0,
-        Bufffer = 1
+        SpeedTest = 1
     };
 }

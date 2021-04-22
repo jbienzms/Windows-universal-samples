@@ -179,6 +179,10 @@ namespace StreamSocketSample
             StreamSocketListenerConnectionReceivedEventArgs args)
         {
             DataReader reader = new DataReader(args.Socket.InputStream);
+            DataWriter writer = new DataWriter(args.Socket.OutputStream);
+
+            // Used for generating random data below
+            Random random = new Random();
 
             // A place to receive raw data
             byte[] buffer = null;
@@ -230,7 +234,7 @@ namespace StreamSocketSample
                             break;
 
                         // Receive buffer
-                        case PacketType.Bufffer:
+                        case PacketType.SpeedTest:
 
                             // Read the buffer length
                             uint bufferLength = reader.ReadUInt32();
@@ -250,8 +254,14 @@ namespace StreamSocketSample
                             // Receive the data
                             reader.ReadBytes(buffer);
 
-                            // Log but don't display receipt of data. Too many notifications.
-                            // Debug.WriteLine("Received {0} bytes", bufferLength);
+                            // Randomize the buffer
+                            random.NextBytes(buffer);
+
+                            // Reply
+                            writer.WriteBytes(buffer);
+
+                            // Send bytes
+                            await writer.StoreAsync();
 
                             break;
 

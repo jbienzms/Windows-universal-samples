@@ -53,6 +53,19 @@ namespace StreamSocketSample
         private void CloseSockets_Click(object sender, RoutedEventArgs e)
         {
             object outValue;
+            if (CoreApplication.Properties.TryGetValue("clientDataReader", out outValue))
+            {
+                // Remove the data reader from the list of application properties as we are about to close it.
+                CoreApplication.Properties.Remove("clientDataReader");
+                DataReader dataReader = (DataReader)outValue;
+
+                // To reuse the socket with another data reader, the application must detach the stream from the
+                // current writer before disposing it. This is added for completeness, as this sample closes the socket
+                // below.
+                dataReader.DetachStream();
+                dataReader.Dispose();
+            }
+
             if (CoreApplication.Properties.TryGetValue("clientDataWriter", out outValue))
             {
                 // Remove the data writer from the list of application properties as we are about to close it.
@@ -61,7 +74,7 @@ namespace StreamSocketSample
 
                 // To reuse the socket with another data writer, the application must detach the stream from the
                 // current writer before disposing it. This is added for completeness, as this sample closes the socket
-                // in the very next block.
+                // below.
                 dataWriter.DetachStream();
                 dataWriter.Dispose();
             }

@@ -90,7 +90,19 @@ namespace StreamSocketSample
                 writer = (DataWriter)outValue;
             }
 
-            // Create a 1k buffer
+            // Create a DataReader if we did not create one yet. Otherwise use one that is already cached.
+            DataReader reader;
+            if (!CoreApplication.Properties.TryGetValue("clientDataReader", out outValue))
+            {
+                reader = new DataReader(socket.InputStream);
+                CoreApplication.Properties.Add("clientDataReader", reader);
+            }
+            else
+            {
+                reader = (DataReader)outValue;
+            }
+
+            // Create a buffer for reading and writing data
             byte[] buffer = new byte[4096];
 
             // Run until canceled
@@ -101,28 +113,48 @@ namespace StreamSocketSample
 
                 // Write the packet type, followed by length of the buffer as UINT32 value followed up by the data.
                 // Writing data to the writer will just store data in memory.
-                writer.WriteByte((byte)PacketType.Bufffer);
+                writer.WriteByte((byte)PacketType.SpeedTest);
                 writer.WriteUInt32((UInt32)buffer.Length);
                 writer.WriteBytes(buffer);
 
-                // Write the locally buffered data to the network.
+                // Write the locally buffered data to the network and read the reply.
                 try
                 {
+                    // Send bytes
                     await writer.StoreAsync();
-                    // SendOutput.Text = "\"" + stringToSend + "\" sent successfully.";
-                    // Debug.WriteLine("Wrote buffer");
+
+                    // Load reply
+                    uint actualBufferLength = await reader.LoadAsync((UInt32)buffer.Length);
+                    if (actualBufferLength != (UInt32)buffer.Length)
+                    {
+                        // The underlying socket was closed before we were able to read the whole data.
+                        rootPage.NotifyUser("Received failed", NotifyType.ErrorMessage);
+                        return;
+                    }
+
+                    // Read reply
+                    reader.ReadBytes(buffer);
+
+                    float iBitsK = socket.Information.BandwidthStatistics.InboundBitsPerSecond / 1024f;
+                    float iInstaK = socket.Information.BandwidthStatistics.InboundBitsPerSecondInstability / 1024f;
+                    float oBitsK = socket.Information.BandwidthStatistics.OutboundBitsPerSecond / 1024f;
+                    float oInstaK = socket.Information.BandwidthStatistics.OutboundBitsPerSecondInstability / 1024f;
+                    float rtMaxMil = socket.Information.RoundTripTimeStatistics.Max / 1000f;
+                    float rtMinMil = socket.Information.RoundTripTimeStatistics.Min / 1000f;
+                    float rtSumMil = socket.Information.RoundTripTimeStatistics.Sum / 1000f;
+                    float rtVarMil = socket.Information.RoundTripTimeStatistics.Variance / 1000f;
 
                     // Update stats
                     InboundBandwidthPeaked.Text = socket.Information.BandwidthStatistics.InboundBandwidthPeaked.ToString();
-                    InboundBitsPerSecond.Text = socket.Information.BandwidthStatistics.InboundBitsPerSecond.ToString();
-                    InboundBitsPerSecondInstability.Text = socket.Information.BandwidthStatistics.InboundBitsPerSecondInstability.ToString();
+                    InboundBitsPerSecond.Text = iBitsK.ToString("#,0.00# kbps");
+                    InboundBitsPerSecondInstability.Text = iInstaK.ToString("#,0.00# kbps");
                     OutboundBandwidthPeaked.Text = socket.Information.BandwidthStatistics.OutboundBandwidthPeaked.ToString();
-                    OutboundBitsPerSecond.Text = socket.Information.BandwidthStatistics.OutboundBitsPerSecond.ToString();
-                    OutboundBitsPerSecondInstability.Text = socket.Information.BandwidthStatistics.OutboundBitsPerSecondInstability.ToString();
-                    RoundTripMax.Text = socket.Information.RoundTripTimeStatistics.Max.ToString();
-                    RoundTripMin.Text = socket.Information.RoundTripTimeStatistics.Min.ToString();
-                    RoundTripSum.Text = socket.Information.RoundTripTimeStatistics.Sum.ToString();
-                    RoundTripVariance.Text = socket.Information.RoundTripTimeStatistics.Variance.ToString();
+                    OutboundBitsPerSecond.Text = oBitsK.ToString("#,0.00# kbps");
+                    OutboundBitsPerSecondInstability.Text = oInstaK.ToString("#,0.00# kbps");
+                    RoundTripMax.Text = rtMaxMil.ToString("#,0.00# ms");
+                    RoundTripMin.Text = rtMinMil.ToString("#,0.00# ms");
+                    RoundTripSum.Text = rtSumMil.ToString("#,0.00# ms");
+                    RoundTripVariance.Text = rtVarMil.ToString("#,0.00# ms");
                 }
                 catch (Exception exception)
                 {
