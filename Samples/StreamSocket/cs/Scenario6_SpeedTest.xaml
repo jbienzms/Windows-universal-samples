@@ -11,22 +11,78 @@
 //*********************************************************
 -->
 <Page x:Class="StreamSocketSample.Scenario6" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:SDKTemplate" xmlns:common="using:SDKTemplate.Common" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
-  <StackPanel>
-    <TextBlock x:Name="InputTextBlock1" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}">
+    <ScrollViewer>
+    <StackPanel>
+        <TextBlock x:Name="InputTextBlock1" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}">
         Now you can run a speed test with the 'server'. Random blocks of data will be sent using
       a DataWriter and statistics about the transmission will be shown below.
-    </TextBlock>
+        </TextBlock>
         <StackPanel Orientation="Horizontal">
             <Button x:Name="StartTest" Content="Start Test" Margin="4" Click="StartTest_Click"/>
             <Button x:Name="StopTest" Content="Stop Test" Margin="4" IsEnabled="False" Click="StopTest_Click"/>
         </StackPanel>
-    <TextBlock x:Name="SendOutput" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}"/>
-    <!-- Add Storyboards to the visual states below as necessary for supporting the various layouts -->
-    <VisualStateManager.VisualStateGroups>
-      <VisualStateGroup>
-        <VisualState x:Name="DefaultLayout"/>
-        <VisualState x:Name="Below768Layout"/>
-      </VisualStateGroup>
-    </VisualStateManager.VisualStateGroups>
-  </StackPanel>
+        <TextBlock x:Name="SendOutput" TextWrapping="Wrap" Style="{StaticResource BasicTextStyle}"/>
+        <Grid Margin="20,20,17,20" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Inbound Bandwidth Peaked" />
+            <TextBox Grid.Row="0"  Grid.Column="1" IsReadOnly="True" Text="False" VerticalAlignment="Center" x:Name="InboundBandwidthPeaked" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="True when the app is using enough of the connection bandwidth that the system can get a good estimate of the bandwidth delay product and can determine that the congestion window is a substantial fraction of the bandwidth delay product. This member can change from true to false if the app sends less data." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Inbound Bits Per Second" />
+            <TextBox Grid.Row="1" Grid.Column="1" IsReadOnly="True" Text="0 kbps" VerticalAlignment="Center" x:Name="InboundBitsPerSecond" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="The computed inbound bandwidth estimate in bits per second." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Inbound Bits Per Second Instability" />
+            <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Text="0 kbps" VerticalAlignment="Center" x:Name="InboundBitsPerSecondInstability" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="2" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="A measure of the instability of the inbound bandwidth estimate in bits per second." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Outbound Bandwidth Peaked" />
+            <TextBox Grid.Row="4"  Grid.Column="1" IsReadOnly="True" Text="False" VerticalAlignment="Center" x:Name="OutboundBandwidthPeaked" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="4" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="True when the app is using enough of the connection bandwidth that the system can get a good estimate of the bandwidth delay product and can determine that the congestion window is a substantial fraction of the bandwidth delay product. This member can change from true to false if the app sends less data." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="5" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Outbound Bits Per Second" />
+            <TextBox Grid.Row="5" Grid.Column="1" IsReadOnly="True" Text="0 kbps" VerticalAlignment="Center" x:Name="OutboundBitsPerSecond" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="5" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="The computed outbound bandwidth estimate in bits per second." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="6" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Outbound Bits Per Second Instability" />
+            <TextBox Grid.Row="6" Grid.Column="1" IsReadOnly="True" Text="0 kbps" VerticalAlignment="Center" x:Name="OutboundBitsPerSecondInstability" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="6" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="A measure of the instability of the outbound bandwidth estimate in bits per second." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Round Trip Max" />
+            <TextBox Grid.Row="8"  Grid.Column="1" IsReadOnly="True" Text="0 us" VerticalAlignment="Center" x:Name="RoundTripMax" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="8" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="The maximum sampled round trip time, in microseconds." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="9" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Round Trip Min" />
+            <TextBox Grid.Row="9" Grid.Column="1" IsReadOnly="True" Text="0 us" VerticalAlignment="Center" x:Name="RoundTripMin" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="9" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="The minimum sampled round trip time, in microseconds." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="10" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Round Trip Sum" />
+            <TextBox Grid.Row="10" Grid.Column="1" IsReadOnly="True" Text="0 us" VerticalAlignment="Center" x:Name="RoundTripSum" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="10" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="A smoothed value round trip time, in microseconds, computed from all sampled round trip times. The smoothing function is weighted additive." TextWrapping="WrapWholeWords" />
+            <TextBlock Grid.Row="11" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="Round Trip Variance" />
+            <TextBox Grid.Row="11" Grid.Column="1" IsReadOnly="True" Text="0 us" VerticalAlignment="Center" x:Name="RoundTripVariance" Margin="4,4,4,4" />
+            <TextBlock Grid.Row="11" Grid.Column="2" Margin="4,4,4,1" VerticalAlignment="Top" Text="The round trip time variation, in microseconds." TextWrapping="WrapWholeWords" />
+        </Grid>
+        <TextBlock Margin="20,5,20,0" VerticalAlignment="Top" Text="Bits Per Second represent inbound and outbound bandwidth" />
+        <TextBlock Margin="20,5,20,0" VerticalAlignment="Top" Text="Round Trip Sum represents latency" />
+        <TextBlock Margin="20,5,20,0" VerticalAlignment="Top" Text="Instability and Variance represent jitter" />
+        <!-- Add Storyboards to the visual states below as necessary for supporting the various layouts -->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="DefaultLayout"/>
+                <VisualState x:Name="Below768Layout"/>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </StackPanel>
+    </ScrollViewer>
 </Page>

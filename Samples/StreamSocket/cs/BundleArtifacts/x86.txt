@@ -1,0 +1,2 @@
+MainPackage=C:\Users\jbien\Code\JBienzMS\Windows-universal-samples\Samples\StreamSocket\cs\bin\x86\Debug\StreamSocket_1.0.0.0_x86_Debug.msix
+SymbolPackage=C:\Users\jbien\Code\JBienzMS\Windows-universal-samples\Samples\StreamSocket\cs\obj\x86\Debug\Symbols\StreamSocket_1.0.0.0_x86_Debug.appxsym

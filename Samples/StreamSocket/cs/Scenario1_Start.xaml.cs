@@ -251,7 +251,7 @@ namespace StreamSocketSample
                             reader.ReadBytes(buffer);
 
                             // Log but don't display receipt of data. Too many notifications.
-                            Debug.WriteLine("Received {0} bytes", bufferLength);
+                            // Debug.WriteLine("Received {0} bytes", bufferLength);
 
                             break;
 

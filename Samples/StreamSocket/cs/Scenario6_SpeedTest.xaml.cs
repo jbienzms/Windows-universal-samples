@@ -91,7 +91,7 @@ namespace StreamSocketSample
             }
 
             // Create a 1k buffer
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096];
 
             // Run until canceled
             while (!ct.IsCancellationRequested)
@@ -110,7 +110,19 @@ namespace StreamSocketSample
                 {
                     await writer.StoreAsync();
                     // SendOutput.Text = "\"" + stringToSend + "\" sent successfully.";
-                    Debug.WriteLine("Wrote buffer");
+                    // Debug.WriteLine("Wrote buffer");
+
+                    // Update stats
+                    InboundBandwidthPeaked.Text = socket.Information.BandwidthStatistics.InboundBandwidthPeaked.ToString();
+                    InboundBitsPerSecond.Text = socket.Information.BandwidthStatistics.InboundBitsPerSecond.ToString();
+                    InboundBitsPerSecondInstability.Text = socket.Information.BandwidthStatistics.InboundBitsPerSecondInstability.ToString();
+                    OutboundBandwidthPeaked.Text = socket.Information.BandwidthStatistics.OutboundBandwidthPeaked.ToString();
+                    OutboundBitsPerSecond.Text = socket.Information.BandwidthStatistics.OutboundBitsPerSecond.ToString();
+                    OutboundBitsPerSecondInstability.Text = socket.Information.BandwidthStatistics.OutboundBitsPerSecondInstability.ToString();
+                    RoundTripMax.Text = socket.Information.RoundTripTimeStatistics.Max.ToString();
+                    RoundTripMin.Text = socket.Information.RoundTripTimeStatistics.Min.ToString();
+                    RoundTripSum.Text = socket.Information.RoundTripTimeStatistics.Sum.ToString();
+                    RoundTripVariance.Text = socket.Information.RoundTripTimeStatistics.Variance.ToString();
                 }
                 catch (Exception exception)
                 {
