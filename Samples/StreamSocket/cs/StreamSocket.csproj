@@ -109,6 +109,9 @@
     <Compile Include="Scenario2_Connect.xaml.cs">
       <DependentUpon>Scenario2_Connect.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Scenario6_SpeedTest.xaml.cs">
+      <DependentUpon>Scenario6_SpeedTest.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Scenario3_Send.xaml.cs">
       <DependentUpon>Scenario3_Send.xaml</DependentUpon>
     </Compile>
@@ -140,6 +143,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Scenario2_Connect.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Scenario6_SpeedTest.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
